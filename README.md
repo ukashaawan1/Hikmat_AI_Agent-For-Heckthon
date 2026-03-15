@@ -56,28 +56,49 @@ The system follows a lean, high-performance architecture:
 
 ---
 
-## 👨‍💻 Spin-Up Instructions (Reproducibility)
+## 👨‍💻 Reproducible Testing Instructions
 
-To run this project locally:
+To run and test this project locally, follow these steps:
 
-1. **Clone the Repository**:
+### 1. Prerequisites
+- **Node.js** (v18 or higher)
+- **Gemini API Key** (Get one from [Google AI Studio](https://aistudio.google.com/))
+
+### 2. Manual Setup
+1. **Clone the project** and navigate to the directory:
    ```bash
-   git clone https://github.com/your-username/wisdom-ai-agent.git
-   cd wisdom-ai-agent
+   cd philosophy-ai
    ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Configure Environment Variables**:
+   - Create a file named `.env` in the root directory.
+   - Add your API key:
+     ```env
+     GEMINI_API_KEY=your_actual_api_key_here
+     ```
 
-2. **API Key Setup**:
-   - Obtain a Gemini API Key from [Google AI Studio](https://aistudio.google.com/).
-   - Open `app.js` and replace the `GEMINI_API_KEY` value on line 9.
+### 3. Running the Project
+1. **Start the Unified Server**:
+   ```bash
+   node server.js
+   ```
+2. **Access the App**:
+   - Open your browser and go to `http://localhost:8080`.
+   - To test **Vision Mode**, ensure your camera is enabled and select "Vision Mode" from the home screen.
 
-3. **Run Locally**:
-   - Since this uses WebSockets and microphone access, it's best served via a local server (e.g., Live Server in VS Code or `npx serve .`).
-   - Open your browser and navigate to `http://localhost:5000`.
+### 4. Automated Start (Windows)
+- Simply run the `Start.bat` file. It will install dependencies, set up the server, and open the browser automatically.
 
-4. **Deployment**:
-   - Install Firebase Tools: `npm install -g firebase-tools`
-   - Login: `firebase login`
-   - Deploy: `firebase deploy`
+---
+
+## 🛠️ Deployment Instructions
+This project is optimized for **Google Cloud Run**. To deploy:
+1. Ensure the `Dockerfile` is present in the root.
+2. Build and push the container to Google Artifact Registry.
+3. Deploy to Cloud Run and set the `GEMINI_API_KEY` as an environment variable in the Cloud Run service settings.
 
 ---
 
