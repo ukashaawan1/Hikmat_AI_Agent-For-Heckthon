@@ -26,7 +26,8 @@ let isActive = false;
 let frameInterval = null;
 let activeSources = [];
 let isMuted = false;
-let isSpeakerMuted = false;
+let isSpeakerActive = false; // Starts in Default mode
+let outputVolumeNode = null;
 
 const muteBtn = document.getElementById("muteBtn");
 const speakerBtn = document.getElementById("speakerBtn");
@@ -204,7 +205,6 @@ function base64ToInt16(base64) {
 }
 
 async function playPcmChunk(base64) {
-    if (isSpeakerMuted) return;
     if (!audioCtx) audioCtx = new AudioContext({ sampleRate: 24000 });
     const int16 = base64ToInt16(base64);
     const float32 = new Float32Array(int16.length);
@@ -215,7 +215,14 @@ async function playPcmChunk(base64) {
 
     const source = audioCtx.createBufferSource();
     source.buffer = buffer;
-    source.connect(audioCtx.destination);
+    
+    if (!outputVolumeNode) {
+        outputVolumeNode = audioCtx.createGain();
+        outputVolumeNode.gain.value = isSpeakerActive ? 1.0 : 0.4;
+        outputVolumeNode.connect(audioCtx.destination);
+    }
+
+    source.connect(outputVolumeNode);
     source.start();
 
     activeSources.push(source);
@@ -248,17 +255,39 @@ switchCamBtn.onclick = () => {
     initCamera();
 };
 
-muteBtn.onclick = () => {
-    isMuted = !isMuted;
-    muteBtn.style.color = isMuted ? "#ef4444" : "#fff";
-    muteBtn.style.background = isMuted ? "rgba(239, 68, 68, 0.1)" : "var(--glass)";
+speakerBtn.onclick = async () => {
+    isSpeakerActive = !isSpeakerActive;
+    speakerBtn.classList.toggle('active', isSpeakerActive);
+    
+    // 1. Digital Volume Boost
+    if (outputVolumeNode) {
+        const targetGain = isSpeakerActive ? 1.5 : 0.6;
+        outputVolumeNode.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.1);
+    }
+
+    // 2. Hardware Routing (setSinkId)
+    if (audioCtx && typeof audioCtx.setSinkId === 'function') {
+        try {
+            if (isSpeakerActive) {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const speakers = devices.filter(d => d.kind === 'audiooutput');
+                const builtIn = speakers.find(d => 
+                    d.label.toLowerCase().includes('speaker') || 
+                    d.label.toLowerCase().includes('built-in')
+                );
+                if (builtIn) await audioCtx.setSinkId(builtIn.deviceId);
+            } else {
+                await audioCtx.setSinkId("");
+            }
+        } catch (e) {
+            console.warn("Speaker routing error:", e);
+        }
+    }
 };
 
-speakerBtn.onclick = () => {
-    isSpeakerMuted = !isSpeakerMuted;
-    speakerBtn.style.color = isSpeakerMuted ? "#ef4444" : "#fff";
-    speakerBtn.style.background = isSpeakerMuted ? "rgba(239, 68, 68, 0.1)" : "var(--glass)";
-    if (isSpeakerMuted) stopAllAudio();
+muteBtn.onclick = () => {
+    isMuted = !isMuted;
+    muteBtn.classList.toggle('muted', isMuted);
 };
 
 const urlParams = new URLSearchParams(window.location.search);

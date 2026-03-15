@@ -229,9 +229,11 @@ let websocket = null;
 let audioContext = null;
 let mediaStream = null;
 let workletNode = null;
+let analyserNode = null;
+let outputVolumeNode = null; 
 let isCallActive = false;
 let isMuted = false;
-let isSpeakerMuted = false;
+let isSpeakerActive = false; // Starts in Default mode (not loud speaker)
 let callStartTime = null;
 let timerInterval = null;
 let audioQueue = [];
@@ -344,7 +346,6 @@ function initParticles() {
 
 // ===== WAVEFORM VISUALIZATION =====
 let waveformAnimId = null;
-let analyserNode = null;
 
 function initWaveform() {
     const ctx = waveformCanvas.getContext('2d');
@@ -577,7 +578,7 @@ function base64ToArrayBuffer(base64) {
 
 // ===== AUDIO PLAYBACK =====
 function playAudioChunk(base64Audio) {
-    if (!audioContext || isSpeakerMuted) return;
+    if (!audioContext) return;
 
     const pcmData = base64ToArrayBuffer(base64Audio);
     const int16Array = new Int16Array(pcmData);
@@ -597,7 +598,14 @@ function playAudioChunk(base64Audio) {
     if (!analyserNode) {
         analyserNode = audioContext.createAnalyser();
         analyserNode.fftSize = 256;
-        analyserNode.connect(audioContext.destination);
+        
+        // Create volume node for output
+        outputVolumeNode = audioContext.createGain();
+        // Default mode is lower volume, Speaker mode is 1.0
+        outputVolumeNode.gain.value = isSpeakerActive ? 1.0 : 0.4;
+
+        analyserNode.connect(outputVolumeNode);
+        outputVolumeNode.connect(audioContext.destination);
     }
     source.connect(analyserNode);
 
@@ -828,6 +836,7 @@ async function startCall() {
 
 function endCall() {
     isCallActive = false;
+    stopCallTimer();
     callScreen.classList.remove('call-active', 'ai-speaking');
 
     // Close WebSocket
@@ -858,7 +867,9 @@ function endCall() {
     isPlayingAudio = false;
     nextPlayTime = 0;
     isMuted = false;
+    isSpeakerActive = false;
     muteBtn.classList.remove('muted');
+    speakerBtn.classList.remove('active');
 
     // Reset UI
     callBtn.style.display = 'flex';
@@ -876,11 +887,39 @@ function toggleMute() {
     muteBtn.classList.toggle('muted', isMuted);
 }
 
-function toggleSpeaker() {
-    isSpeakerMuted = !isSpeakerMuted;
-    speakerBtn.classList.toggle('muted', isSpeakerMuted);
-    if (isSpeakerMuted) {
-        stopAllAudio(); // Stop current playing audio
+async function toggleSpeaker() {
+    isSpeakerActive = !isSpeakerActive;
+    speakerBtn.classList.toggle('active', isSpeakerActive);
+    
+    // 1. Digital Volume Boost
+    if (outputVolumeNode) {
+        // Boost volume significantly for speaker mode
+        const targetGain = isSpeakerActive ? 1.5 : 0.6; 
+        outputVolumeNode.gain.setTargetAtTime(targetGain, audioContext.currentTime, 0.1);
+    }
+
+    // 2. Attempt Hardware Speaker Routing (Supported in modern Chrome/Edge)
+    if (audioContext && typeof audioContext.setSinkId === 'function') {
+        try {
+            if (isSpeakerActive) {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const speakers = devices.filter(d => d.kind === 'audiooutput');
+                // Try to find the built-in speaker
+                const builtIn = speakers.find(d => 
+                    d.label.toLowerCase().includes('speaker') || 
+                    d.label.toLowerCase().includes('built-in')
+                );
+                if (builtIn) {
+                    await audioContext.setSinkId(builtIn.deviceId);
+                    console.log('Routed to:', builtIn.label);
+                }
+            } else {
+                // Reset to default (e.g. Headset)
+                await audioContext.setSinkId("");
+            }
+        } catch (err) {
+            console.warn('Hardware speaker routing not supported:', err);
+        }
     }
 }
 

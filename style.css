@@ -154,17 +154,29 @@ body.rtl {
 /* Header Controls */
 .header-controls {
     position: absolute;
-    top: 1.5rem;
-    left: 2rem;
+    top: 1rem;
+    left: 0;
+    width: 100%;
+    padding: 0 1.5rem;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    z-index: 100;
+    z-index: 1000;
 }
 
-body.ltr .header-controls {
-    left: auto;
-    right: 2rem;
+/* Ensure language selector is on the right by default */
+.language-selector {
+    order: 2;
+}
+
+/* Ensure info button is on the left by default */
+.info-btn {
+    order: 1;
+    margin: 0;
+}
+
+body.rtl .header-controls {
+    flex-direction: row-reverse;
 }
 
 .language-selector {
@@ -210,8 +222,26 @@ body.ltr .header-controls {
 .info-btn:hover {
     background: var(--bg-hover);
     color: var(--accent-primary);
-    transform: translateY(-5px);
+    transform: scale(1.1);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn.muted {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important;
+}
+
+.control-btn.muted svg {
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.5));
+}
+
+.control-btn.active {
+    background: rgba(129, 140, 248, 0.2) !important;
+    color: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 15px var(--accent-glow) !important;
 }
 
 /* Info Overlay */
@@ -1210,15 +1240,6 @@ body.ltr .header-controls {
         gap: 1rem;
     }
 
-    .language-selector {
-        top: 1rem;
-        left: 1rem;
-    }
-
-    body.ltr .language-selector {
-        left: auto;
-        right: 1rem;
-    }
 
     .call-container {
         padding: 1rem;
