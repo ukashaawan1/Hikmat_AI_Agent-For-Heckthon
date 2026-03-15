@@ -1,0 +1,15 @@
+{
+  "name": "philosophy-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Philosophy AI Main Application",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wisdom AI Agent — Live Philosophy & Logic Tutor</title>
+    <meta name="description"
+        content="Wisdom AI Agent is a real-time voice-based tutor for philosophy and logic. Powered by Gemini Live API.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Ambient Background Particles -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- ===== LANDING SCREEN ===== -->
+    <div id="landingScreen" class="screen active">
+        <div class="landing-container">
+            <!-- Language Selector -->
+            <div class="language-selector">
+                <select id="languageSelect" class="lang-dropdown">
+                    <option value="ur">اردو</option>
+                    <option value="en" selected>English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
+
+            <div class="logo-section">
+                <div class="logo-glow"></div>
+                <div class="logo-icon">
+                    <svg viewBox="0 0 120 120" fill="none">
+                        <circle cx="60" cy="60" r="55" stroke="url(#logoGrad)" stroke-width="2.5" opacity="0.6" />
+                        <circle cx="60" cy="60" r="40" stroke="url(#logoGrad)" stroke-width="1.5" opacity="0.3" />
+                        <path d="M60 20 L60 100 M20 60 L100 60 M32 32 L88 88 M88 32 L32 88" stroke="url(#logoGrad)"
+                            stroke-width="1" opacity="0.2" />
+                        <circle cx="60" cy="60" r="8" fill="url(#logoGrad)" />
+                        <circle cx="60" cy="30" r="4" fill="url(#logoGrad)" opacity="0.7" />
+                        <circle cx="60" cy="90" r="4" fill="url(#logoGrad)" opacity="0.7" />
+                        <circle cx="30" cy="60" r="4" fill="url(#logoGrad)" opacity="0.7" />
+                        <circle cx="90" cy="60" r="4" fill="url(#logoGrad)" opacity="0.7" />
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="120" y2="120">
+                                <stop offset="0%" stop-color="#a78bfa" />
+                                <stop offset="50%" stop-color="#818cf8" />
+                                <stop offset="100%" stop-color="#6366f1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1 class="app-title">Wisdom AI Agent</h1>
+                <p class="app-subtitle">The Socratic Voice for Logic & Philosophy</p>
+                <p class="app-tagline">Built for Google Gemini Hackathon</p>
+            </div>
+
+            <div class="mode-section">
+                <h2 class="section-title">Select Your Mode</h2>
+                <div class="mode-grid">
+                    <!-- Learning Modes -->
+                    <div class="mode-card" data-mode="beginner" tabindex="0">
+                        <div class="mode-card-glow"></div>
+                        <div class="mode-icon">🎓</div>
+                        <h3>Learning Mode</h3>
+                        <p>Learn philosophy or logic step-by-step from a university professor</p>
+                        <div class="mode-tag">Learning</div>
+                    </div>
+
+                    <div class="mode-card" data-mode="advanced" tabindex="0">
+                        <div class="mode-card-glow"></div>
+                        <div class="mode-icon">⚖️</div>
+                        <h3>Debate Mode</h3>
+                        <p>Debate like any philosopher and accept the challenge</p>
+                        <div class="mode-tag">Debate</div>
+                    </div>
+
+                    <div class="mode-card" data-mode="qa" tabindex="0">
+                        <div class="mode-card-glow"></div>
+                        <div class="mode-icon">❓</div>
+                        <h3>Q&A Mode</h3>
+                        <p>Ask any question about philosophy and get scholarly answers</p>
+                        <div class="mode-tag">Q&A</div>
+                    </div>
+
+                    <div class="mode-card" data-mode="compare" tabindex="0">
+                        <div class="mode-card-glow"></div>
+                        <div class="mode-icon">🔄</div>
+                        <h3>Compare Mode</h3>
+                        <p>Compare theories of different philosophers on any topic</p>
+                        <div class="mode-tag">Compare</div>
+                    </div>
+
+                    <div class="mode-card story-card" data-mode="story" tabindex="0">
+                        <div class="mode-card-glow"></div>
+                        <div class="mode-icon">📖</div>
+                        <h3>Story Mode</h3>
+                        <p>Learn philosophy and logic through engaging stories</p>
+                        <div class="mode-tag">Stories</div>
+                    </div>
+
+                    <div class="mode-card vision-card" id="visionModeCard" data-mode="vision" tabindex="0">
+                        <div class="mode-card-glow"></div>
+                        <div class="mode-icon">👁️</div>
+                        <h3>Vision Mode</h3>
+                        <p>Let Wisdom AI see the world and find philosophy everywhere</p>
+                        <div class="mode-tag">Vision</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Info Button -->
+            <button id="infoBtn" class="info-btn" title="Information">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+
+            <!-- Info Overlay -->
+            <div id="infoOverlay" class="info-overlay">
+                <div class="info-content">
+                    <button id="closeInfo" class="close-info">&times;</button>
+                    <h3 class="info-title">Wisdom AI Agent Features</h3>
+                    <ul class="info-list">
+                        <li><span class="info-dot"></span>Real-time Voice</li>
+                        <li><span class="info-dot"></span>Urdu & English (Multilingual)</li>
+                        <li><span class="info-dot"></span>Seamless Interaction</li>
+                        <li><span class="info-dot"></span>Powered by Gemini AI</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CALL SCREEN ===== -->
+    <div id="callScreen" class="screen">
+        <div class="call-container">
+            <!-- Top Bar -->
+            <div class="call-topbar">
+                <button id="backBtn" class="icon-btn" title="Back">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </button>
+                <div class="call-info">
+                    <span id="callModeBadge" class="call-mode-badge">Mode</span>
+                    <span id="callTimer" class="call-timer">00:00</span>
+                </div>
+                <div class="call-status-dot" id="connectionDot">
+                    <span></span>
+                </div>
+            </div>
+
+            <!-- Central Visual -->
+            <div class="call-visual">
+                <div class="orb-container">
+                    <div class="orb-ring orb-ring-1"></div>
+                    <div class="orb-ring orb-ring-2"></div>
+                    <div class="orb-ring orb-ring-3"></div>
+                    <canvas id="waveformCanvas"></canvas>
+                    <div class="orb-center" id="orbCenter">
+                        <div class="orb-icon">Wisdom</div>
+                    </div>
+                </div>
+                <p id="callStatus" class="call-status-text">Press button to start</p>
+            </div>
+
+
+            <!-- Call Controls -->
+            <div class="call-controls">
+                <button id="muteBtn" class="control-btn mute-btn" title="Mute">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                        <line x1="8" y1="23" x2="16" y2="23" />
+                    </svg>
+                </button>
+
+                <button id="callBtn" class="control-btn call-btn" title="Start Call">
+                    <svg id="callIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                </button>
+
+                <button id="endCallBtn" class="control-btn end-btn" title="End Call" style="display:none;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z" />
+                    </svg>
+                </button>
+
+                <button id="speakerBtn" class="control-btn speaker-btn" title="Speaker">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div id="summaryModal" class="summary-modal">
+        <div class="summary-card">
+            <div class="summary-header">
+                <div class="summary-icon">📜</div>
+                <h3>Philosophical Recap</h3>
+            </div>
+            <div id="summaryBody" class="summary-body">
+                <div class="summary-loading">Gemini is analyzing your conversation...</div>
+            </div>
+            <button id="closeSummaryBtn" class="primary-btn">Got it</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

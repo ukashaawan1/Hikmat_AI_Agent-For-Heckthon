@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "vision/node_modules/**",
+      "Camra ai/**",
+      "*.bat",
+      "*.txt",
+      "package.json",
+      "package-lock.json",
+      "main-server.js"
+    ]
+  }
+}
