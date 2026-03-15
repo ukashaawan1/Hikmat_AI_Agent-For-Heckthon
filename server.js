@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.json({ limit: "15mb" }));
 // Environment variables
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyAJRvuHIWJ9k2Fy9CLyAI_XTySZxoXUBv4";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const MODEL_NAME = "gemini-2.5-flash-native-audio-preview-12-2025";
 
 // API Endpoint to provide config to frontend (keeps key out of GitHub code)
