@@ -25,6 +25,11 @@ let audioQueue = Promise.resolve();
 let isActive = false;
 let frameInterval = null;
 let activeSources = [];
+let isMuted = false;
+let isSpeakerMuted = false;
+
+const muteBtn = document.getElementById("muteBtn");
+const speakerBtn = document.getElementById("speakerBtn");
 
 async function initCamera() {
     if (stream) {
@@ -98,7 +103,7 @@ async function startSession() {
             processor = new AudioWorkletNode(audioCtx, 'audio-capture-processor');
             
             processor.port.onmessage = (e) => {
-                if (!isActive || socket.readyState !== 1) return;
+                if (!isActive || socket.readyState !== 1 || isMuted) return;
                 if (e.data.type === 'audio') {
                     const b64 = base64FromInt16(new Int16Array(e.data.data));
                     socket.send(JSON.stringify({ type: "audio", data: b64 }));
@@ -199,6 +204,7 @@ function base64ToInt16(base64) {
 }
 
 async function playPcmChunk(base64) {
+    if (isSpeakerMuted) return;
     if (!audioCtx) audioCtx = new AudioContext({ sampleRate: 24000 });
     const int16 = base64ToInt16(base64);
     const float32 = new Float32Array(int16.length);
@@ -240,6 +246,19 @@ stopBtn.onclick = stopSession;
 switchCamBtn.onclick = () => {
     useFront = !useFront;
     initCamera();
+};
+
+muteBtn.onclick = () => {
+    isMuted = !isMuted;
+    muteBtn.style.color = isMuted ? "#ef4444" : "#fff";
+    muteBtn.style.background = isMuted ? "rgba(239, 68, 68, 0.1)" : "var(--glass)";
+};
+
+speakerBtn.onclick = () => {
+    isSpeakerMuted = !isSpeakerMuted;
+    speakerBtn.style.color = isSpeakerMuted ? "#ef4444" : "#fff";
+    speakerBtn.style.background = isSpeakerMuted ? "rgba(239, 68, 68, 0.1)" : "var(--glass)";
+    if (isSpeakerMuted) stopAllAudio();
 };
 
 const urlParams = new URLSearchParams(window.location.search);

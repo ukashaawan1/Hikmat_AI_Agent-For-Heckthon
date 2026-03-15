@@ -22,13 +22,22 @@
     <!-- ===== LANDING SCREEN ===== -->
     <div id="landingScreen" class="screen active">
         <div class="landing-container">
-            <!-- Language Selector -->
-            <div class="language-selector">
-                <select id="languageSelect" class="lang-dropdown">
-                    <option value="ur">اردو</option>
-                    <option value="en" selected>English</option>
-                    <option value="ar">العربية</option>
-                </select>
+            <!-- Header Controls -->
+            <div class="header-controls">
+                <button id="infoBtn" class="info-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                </button>
+                <div class="language-selector">
+                    <select id="languageSelect" class="lang-dropdown">
+                        <option value="ur">اردو</option>
+                        <option value="en" selected>English</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                </div>
             </div>
 
             <div class="logo-section">
@@ -113,29 +122,6 @@
                 </div>
             </div>
 
-            <!-- Info Button -->
-            <button id="infoBtn" class="info-btn" title="Information">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-            </button>
-
-            <!-- Info Overlay -->
-            <div id="infoOverlay" class="info-overlay">
-                <div class="info-content">
-                    <button id="closeInfo" class="close-info">&times;</button>
-                    <h3 class="info-title">Wisdom AI Agent Features</h3>
-                    <ul class="info-list">
-                        <li><span class="info-dot"></span>Real-time Voice</li>
-                        <li><span class="info-dot"></span>Urdu & English (Multilingual)</li>
-                        <li><span class="info-dot"></span>Seamless Interaction</li>
-                        <li><span class="info-dot"></span>Powered by Gemini AI</li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -224,6 +210,16 @@
                 <div class="summary-loading">Gemini is analyzing your conversation...</div>
             </div>
             <button id="closeSummaryBtn" class="primary-btn">Got it</button>
+        </div>
+    </div>
+
+    <!-- ===== INFO MODAL ===== -->
+    <div id="infoModal" class="info-overlay">
+        <div class="info-content">
+            <button id="closeInfo" class="close-info">&times;</button>
+            <div id="modalBody">
+                <!-- Content injected by JS -->
+            </div>
         </div>
     </div>
 

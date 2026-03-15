@@ -59,6 +59,16 @@ const TRANSLATIONS = {
             endCall: 'کال ختم کریں',
             speaker: 'اسپیکر'
         },
+        info: {
+            title: 'پروجیکٹ کی معلومات',
+            about: 'حکمت ایک جدید AI ٹیوٹر ہے جو گوگل جیمنائی (Gemini) کے ذریعے لائیو آواز اور بصارت (Vision) کے ساتھ فلسفہ اور منطق سکھاتا ہے۔',
+            points: [
+                'جیمنائی لائیو (Gemini Live) کا براہ راست استعمال',
+                'کثیر اللسانی: اردو، عربی اور انگریزی کی مکمل سپورٹ',
+                'سقراط اور رومی جیسے فلاسفہ کے انداز میں گفتگو',
+                'بصارت (Vision): کیمرہ کے ذریعے فلسفیانہ تجزیہ'
+            ]
+        },
         prompts: {
             beginner: `You are "Wisdom AI Agent" — a distinguished university professor of philosophy and logic. Your job is to provide high-level academic guidance.
             Procedure:
@@ -115,6 +125,16 @@ const TRANSLATIONS = {
             startCall: 'Start Call',
             endCall: 'End Call',
             speaker: 'Speaker'
+        },
+        info: {
+            title: 'Project Information',
+            about: 'Wisdom AI is a premium live tutor built with Google Gemini, teaching philosophy and logic through real-time voice and vision.',
+            points: [
+                'Powered by Gemini 2.0 Flash Live API',
+                'Full Support: Urdu, Arabic, and English',
+                'Immersive Debates (Socrates, Rumi, and more)',
+                'Vision Mode: Finding philosophy through the camera'
+            ]
         },
         prompts: {
             beginner: `You are "Wisdom AI Agent" — a distinguished university professor of philosophy and logic. Your job is to provide high-level academic guidance.
@@ -173,6 +193,16 @@ const TRANSLATIONS = {
             endCall: 'إنهاء المكالمة',
             speaker: 'مكبر الصوت'
         },
+        info: {
+            title: 'معلومات المشروع',
+            about: 'حكمة هو معلم ذكاء اصطناعي متميز لتدريس الفلسفة والمنطق من خلال الصوت المباشر والرؤية، مدعوم من Google Gemini.',
+            points: [
+                'مشغّل بواسطة Gemini 2.0 Flash Live API',
+                'دعم كامل للعربية والأردية والإنجليزية',
+                'مناظرات غامرة (سقراط، رومي، والمزيد)',
+                'وضع الرؤية: العثور على الفلسفة من خلال الكاميرا'
+            ]
+        },
         prompts: {
             beginner: `أنت "حكمة" — أنا معلمتك للمنطق والفلسفة. مهمتك هي تعليم الفلسفة والمنطق.
 الإجراء:
@@ -201,6 +231,7 @@ let mediaStream = null;
 let workletNode = null;
 let isCallActive = false;
 let isMuted = false;
+let isSpeakerMuted = false;
 let callStartTime = null;
 let timerInterval = null;
 let audioQueue = [];
@@ -230,6 +261,11 @@ const orbCenter = document.getElementById('orbCenter');
 const summaryModal = document.getElementById('summaryModal');
 const summaryBody = document.getElementById('summaryBody');
 const closeSummaryBtn = document.getElementById('closeSummaryBtn');
+const infoBtn = document.getElementById('infoBtn');
+const infoModal = document.getElementById('infoModal');
+const closeInfoBtn = document.getElementById('closeInfo');
+const modalBody = document.getElementById('modalBody');
+const languageSelect = document.getElementById('languageSelect');
 
 // ===== PARTICLE BACKGROUND =====
 function initParticles() {
@@ -401,7 +437,6 @@ function initWaveform() {
 }
 
 // ===== LANGUAGE & TRANSLATION LOGIC =====
-const languageSelect = document.getElementById('languageSelect');
 
 function updateLanguage(lang) {
     currentLang = lang;
@@ -425,15 +460,19 @@ function updateLanguage(lang) {
     if (sectionTitle) sectionTitle.textContent = t.selectMode;
 
     // Features
-    const infoTitle = document.querySelector('.info-title');
-    if (infoTitle) infoTitle.textContent = t.appTitle + " Features";
-    
-    const featureItems = document.querySelectorAll('.info-list li');
-    t.features.forEach((feat, index) => {
-        if (featureItems[index]) {
-            featureItems[index].innerHTML = `<span class="info-dot"></span>${feat}`;
-        }
-    });
+    const infoTitle = t.info.title;
+    let infoHtml = `
+        <h2 class="info-title">${t.info.title}</h2>
+        <p class="app-subtitle" style="margin-bottom: 2rem; font-size: 1rem;">${t.info.about}</p>
+        <ul class="info-list">
+            ${t.info.points.map(p => `<li><span class="info-dot"></span>${p}</li>`).join('')}
+        </ul>
+    `;
+    if (modalBody) modalBody.innerHTML = infoHtml;
+
+    // Existing info section (if any)
+    const existingInfoTitle = document.querySelector('.info-title:not(#modalBody .info-title)');
+    if (existingInfoTitle) existingInfoTitle.textContent = t.appTitle + " Features";
 
     // Mode Cards
     const modesList = ['beginner', 'advanced', 'qa', 'compare', 'story', 'vision'];
@@ -538,7 +577,7 @@ function base64ToArrayBuffer(base64) {
 
 // ===== AUDIO PLAYBACK =====
 function playAudioChunk(base64Audio) {
-    if (!audioContext) return;
+    if (!audioContext || isSpeakerMuted) return;
 
     const pcmData = base64ToArrayBuffer(base64Audio);
     const int16Array = new Int16Array(pcmData);
@@ -837,6 +876,14 @@ function toggleMute() {
     muteBtn.classList.toggle('muted', isMuted);
 }
 
+function toggleSpeaker() {
+    isSpeakerMuted = !isSpeakerMuted;
+    speakerBtn.classList.toggle('muted', isSpeakerMuted);
+    if (isSpeakerMuted) {
+        stopAllAudio(); // Stop current playing audio
+    }
+}
+
 // ===== UI HELPERS =====
 function updateCallStatus(text, state) {
     callStatus.textContent = text;
@@ -922,6 +969,7 @@ async function showConversationSummary() {
 }
 
 function clearTranscription() {
+    if (!transcriptionContent) return;
     const t = TRANSLATIONS[currentLang];
     transcriptionContent.innerHTML = `<div class="transcript-placeholder">${t.ui.transcriptionPlaceholder}</div>`;
     lastUserTranscript = null;
@@ -948,7 +996,7 @@ initModeListeners();
 callBtn.addEventListener('click', startCall);
 endCallBtn.addEventListener('click', endCall);
 muteBtn.addEventListener('click', toggleMute);
-muteBtn.addEventListener('click', toggleMute);
+speakerBtn.addEventListener('click', toggleSpeaker);
 
 backBtn.addEventListener('click', () => {
     if (isCallActive) {
@@ -986,4 +1034,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial translation load (Default to English)
     languageSelect.value = 'en';
     updateLanguage('en');
+
+    // Info Modal Listeners
+    infoBtn.addEventListener('click', () => {
+        infoModal.classList.add('active');
+        // Automatically close after 5 seconds
+        setTimeout(() => {
+            infoModal.classList.remove('active');
+        }, 5000); 
+    });
+
+    closeInfoBtn.addEventListener('click', () => {
+        infoModal.classList.remove('active');
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === infoModal) {
+            infoModal.classList.remove('active');
+        }
+    });
 });
